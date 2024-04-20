@@ -475,7 +475,7 @@ DWORD WINAPI UnpackWorker(LPVOID)
 //			gs_nArgType = ARG_TYPE_3_ARG;
 			break;
 	}
-	DebugLogf("Arg count type: %u", gs_nArgType);
+	DebugLogf("Arg count type gs_nArgType: %u", gs_nArgType);
 
 	// Check call conv. types
 	switch (gs_nCallConvType)
@@ -487,7 +487,7 @@ DWORD WINAPI UnpackWorker(LPVOID)
 			MessageBoxA(0, xorstr("Unknown call conv. type").crypt_get(), std::to_string(gs_nCallConvType).c_str(), 0);
 			abort();
 	}
-	DebugLogf("Call conv type: %u", gs_nCallConvType);
+	DebugLogf("Call conv type gs_nCallConvType: %u", gs_nCallConvType);
 
 	if (!std::filesystem::exists(xorstr("dump").crypt_get()))
 		std::filesystem::create_directory(xorstr("dump").crypt_get());
@@ -626,12 +626,14 @@ void MainRoutine()
 	auto hUser32 = LoadLibraryA(xorstr("user32.dll").crypt_get());
 	if (!hUser32)
 	{
+		DebugLogf("LoadLibraryA user32.dll fail");
 		MessageBoxA(0, xorstr("LoadLibraryA fail").crypt_get(), 0, 0);
 		return;
 	}
 	auto pMessageBox = reinterpret_cast<uintptr_t>(GetProcAddress(hUser32, xorstr("MessageBoxA").crypt_get()));
 	if (!pMessageBox)
 	{
+		DebugLogf("GetProcAddress user32.dll fail");
 		MessageBoxA(0, xorstr("GetProcAddress fail").crypt_get(), 0, 0);
 		return;
 	}
@@ -647,14 +649,25 @@ void MainRoutine()
 		if (*(uint8_t*)dwStart == 0xE8)
 		{
 			vCallPtrs.emplace_back(dwStart);
-			DebugLogf("%u) %p", vCallPtrs.size(), dwStart);
+			DebugLogf("%u)-%u) %p", vCallPtrs.size(), *(uint8_t*)dwStart, dwStart);
+		}
+		else {
+			DebugLogf("=====%u)-%u) %p", vCallPtrs.size(), *(uint8_t*)dwStart, dwStart);
 		}
 		dwStart++;
 	}
+
+	if (vCallPtrs.empty()) {
+		DebugLogf("vCallPtrs is empty");
+		MessageBoxA(0, xorstr("get vCallPtrs fail").crypt_get(), 0, 0);
+		return;
+	}
+
 	for (const auto& ptr : vCallPtrs)
 	{
 		DebugLogf("%p) %p", ptr, Relative2Absolute(ptr, 1, 5));
 	}
+
 	auto dwTracefCallAddr = vCallPtrs.at(0);
 
 	// ---
@@ -833,9 +846,9 @@ DWORD WINAPI Initialize(LPVOID)
 {
 	for (;;)
 	{
-		if (GetAsyncKeyState(VK_F5) & 0x8000) // down key
+		if (GetAsyncKeyState(VK_F8) & 0x8000) // down key
 		{
-			while (GetAsyncKeyState(VK_F5) & 0x8000) // wait for up key
+			while (GetAsyncKeyState(VK_F8) & 0x8000) // wait for up key
 				Sleep(1);
 
 			MainRoutine();

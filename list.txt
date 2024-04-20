@@ -1,1 +1,3 @@
-pack/rrlocales.epk
+locale/newcibn/locale_interface.txt
+locale/newcibn/item_names.txt
+root/serverinfo.py
