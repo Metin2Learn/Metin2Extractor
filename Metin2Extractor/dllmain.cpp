@@ -14,7 +14,12 @@
 
 void DebugLog(const char* c_szLogData)
 {
-	OutputDebugStringA(c_szLogData);
+	std::ofstream outFile("debug.log", std::ios::app);
+	if (outFile.is_open())
+	{
+		outFile << c_szLogData << std::endl;
+		outFile.close();
+	}
 }
 
 void __DebugLogf(const char* c_szFormat, ...)
